@@ -40,8 +40,8 @@ export class GoogleMaps extends Component {
 
 GoogleMaps.propTypes = {
   google: PropTypes.object.isRequired,
-  latitude: PropTypes.string.isRequired,
-  longitude: PropTypes.string.isRequired,
+  latitude: PropTypes.number.isRequired,
+  longitude: PropTypes.number.isRequired,
   markerName: PropTypes.string.isRequired,
 };
 
