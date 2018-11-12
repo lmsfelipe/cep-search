@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-export const GOOGLE_KEY = process.env.REACT_APP_GOOGLE_KEY;
+export const MAPS_KEY = process.env.REACT_APP_MAPS_KEY;
+export const GEOCODE_KEY = process.env.REACT_APP_GEOCODE_KEY;
 
 class CepServices {
   static GetAddressFromCep(data) {
@@ -8,7 +9,7 @@ class CepServices {
   }
 
   static GetInfosFromAddress(data) {
-    return axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=‎${data}&key=${GOOGLE_KEY}`);
+    return axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=‎${data}&key=${GEOCODE_KEY}`);
   }
 }
 

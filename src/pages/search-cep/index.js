@@ -1,7 +1,7 @@
 import React, { PureComponent, Fragment } from 'react';
 
 import GoogleMaps from '../../components/google-maps';
-import CepServices, { GOOGLE_KEY } from '../../services';
+import CepServices, { MAPS_KEY } from '../../services';
 import './search-cep.css';
 
 class SearchCep extends PureComponent {
@@ -48,7 +48,7 @@ class SearchCep extends PureComponent {
             <p>{cepResponse.cep}</p>
           </div>
           <GoogleMaps
-            googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_KEY}&v=3.exp&libraries=geometry,drawing,places`}
+            googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&v=3.exp&libraries=geometry,drawing,places`}
             loadingElement={<div style={{ height: '400px' }} />}
             containerElement={<div style={{ height: '400px' }} />}
             mapElement={<div style={{ height: '400px' }} />}
