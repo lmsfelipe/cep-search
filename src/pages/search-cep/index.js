@@ -1,28 +1,24 @@
 import React, { PureComponent, Fragment } from 'react';
-// import PropTypes from 'prop-types';
-import axios from 'axios';
-import GoogleMaps from './google-maps';
+
+import GoogleMaps from '../../components/google-maps';
+import CepServices, { GOOGLE_KEY } from '../../services';
 import './search-cep.css';
 
 class SearchCep extends PureComponent {
   state = {
     mapsResp: null,
     loading: false,
-    cepValue: ''
-  }
+    cepValue: '',
+    error: false
+  };
 
   getCep = async () => {
     const { cepValue } = this.state;
     this.setState({ loading: true });
 
     try {
-      const cepResponse = await axios.get(
-        `https://viacep.com.br/ws/${cepValue}/json`
-      );
-
-      const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=‎${cepResponse.data.logradouro}&key=AIzaSyACONYl7VNCxA4xLHRFnBRZQCwZmHT_1MQ`
-      );
+      const cepResponse = await CepServices.GetAddressFromCep(cepValue);
+      const response = await CepServices.GetInfosFromAddress(cepResponse.data.logradouro);
 
       this.setState({
         mapsResp: response.data,
@@ -30,15 +26,19 @@ class SearchCep extends PureComponent {
         loading: false 
       });
     } catch (error) {
-      console.log(error.response);
+      this.setState({
+        error: true,
+        errorMessage: error.response.data,
+        loading: false 
+      });
     }
   }
 
   handleInputChange = (e) => this.setState({ cepValue: e.target.value })
 
   renderMap = () => {
-    const { mapsResp, cepResponse } = this.state;
-
+    const { mapsResp, cepResponse, error } = this.state;
+    
     if (mapsResp && mapsResp.status === 'OK') {
       return (
         <Fragment>
@@ -48,7 +48,7 @@ class SearchCep extends PureComponent {
             <p>{cepResponse.cep}</p>
           </div>
           <GoogleMaps
-            googleMapURL="https://maps.googleapis.com/maps/api/js?key=AIzaSyACONYl7VNCxA4xLHRFnBRZQCwZmHT_1MQ&v=3.exp&libraries=geometry,drawing,places"
+            googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_KEY}&v=3.exp&libraries=geometry,drawing,places`}
             loadingElement={<div style={{ height: '400px' }} />}
             containerElement={<div style={{ height: '400px' }} />}
             mapElement={<div style={{ height: '400px' }} />}
@@ -57,20 +57,18 @@ class SearchCep extends PureComponent {
             markerName="Av Nova"
           />
         </Fragment>
-      )
+      );
+    } else if (error) {
+      return <h2>Opss, houve um problema ao carregar o mapa. =/</h2>
     }
   }
 
   render() {
     const { cepValue, loading } = this.state;
 
-    if (loading) {
-      return 'Loading...';
-    }
-
     return (
       <Fragment>
-        <h1>Consulta de CEP</h1>
+        {/* <h1>Consulta de CEP</h1> */}
         <div className="search-cep-container">
           <div>
             <input type="text" value={cepValue} onChange={this.handleInputChange} />
@@ -84,10 +82,5 @@ class SearchCep extends PureComponent {
     );
   }
 }
-
-SearchCep.propTypes = {
-  //
-};
-
 
 export default SearchCep;
