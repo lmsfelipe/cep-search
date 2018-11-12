@@ -26,6 +26,7 @@ class SearchCep extends PureComponent {
         loading: false 
       });
     } catch (error) {
+      console.log('ERROO', error.response);
       this.setState({
         error: true,
         errorMessage: error.response.data,
@@ -37,7 +38,8 @@ class SearchCep extends PureComponent {
   handleInputChange = (e) => this.setState({ cepValue: e.target.value })
 
   renderMap = () => {
-    const { mapsResp, cepResponse, error } = this.state;
+    const { mapsResp, cepResponse } = this.state;
+    console.log(MAPS_KEY);
     
     if (mapsResp && mapsResp.status === 'OK') {
       return (
@@ -48,7 +50,7 @@ class SearchCep extends PureComponent {
             <p>{cepResponse.cep}</p>
           </div>
           <GoogleMaps
-            googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&v=3.exp&libraries=geometry,drawing,places`}
+            googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&callback=initMap"`}
             loadingElement={<div style={{ height: '400px' }} />}
             containerElement={<div style={{ height: '400px' }} />}
             mapElement={<div style={{ height: '400px' }} />}
@@ -58,7 +60,7 @@ class SearchCep extends PureComponent {
           />
         </Fragment>
       );
-    } else if (error) {
+    } else {
       return <h2>Opss, houve um problema ao carregar o mapa. =/</h2>
     }
   }

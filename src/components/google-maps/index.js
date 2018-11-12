@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Map, InfoWindow, Marker, GoogleApiWrapper } from 'google-maps-react';
+import { MAPS_KEY } from '../../services';
 
 export class GoogleMaps extends Component {
   render() {
@@ -46,5 +47,5 @@ GoogleMaps.propTypes = {
 };
 
 export default GoogleApiWrapper({
-  apiKey: ('AIzaSyCUSvFPCt5OzWY6noWyEFPGgRDALZf4s2A')
+  apiKey: (MAPS_KEY)
 })(GoogleMaps);
