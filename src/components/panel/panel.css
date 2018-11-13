@@ -1,0 +1,23 @@
+.panel {
+  max-width: 700px;
+  position: relative;
+  margin: 20px auto;
+  padding: 30px;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 3px;
+  box-shadow: 2px 2px 10px #0000002e;
+}
+
+.close-button {
+  position: absolute;
+  right: 20px;
+  top: 8px;
+  background: none;
+  border: none;
+  font-size: 1.7em;
+  font-weight: 100;
+  padding: 10px;
+  color: #8a8a8a;
+  cursor: pointer;
+}

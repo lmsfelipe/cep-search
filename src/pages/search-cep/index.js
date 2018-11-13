@@ -1,9 +1,15 @@
 import React, { PureComponent, Fragment } from 'react';
+import jsonp from 'jsonp';
 
-import GoogleMaps from '../../components/google-maps';
-import Loading from '../../components/loading';
-import Title from '../../components/title';
-import CepServices, { MAPS_KEY } from '../../services';
+import {
+  Loading,
+  Title,
+  Panel,
+  Input,
+  Button,
+  MapContent
+} from '../../components';
+import CepServices from '../../services';
 import './search-cep.css';
 
 class SearchCep extends PureComponent {
@@ -23,7 +29,7 @@ class SearchCep extends PureComponent {
     });
   }
 
-  getCep = async () => {
+  getCep = () => {
     const { cepValue } = this.state;
     this.setState({
       loading: true,
@@ -32,26 +38,34 @@ class SearchCep extends PureComponent {
       isClosed: false
     });
 
-    try {
-      const cepResponse = await CepServices.GetAddressFromCep(cepValue);
-      const response = await CepServices.GetInfosFromAddress(cepResponse.data.logradouro);
-
-      if (cepResponse.data.erro) {
+    jsonp(`https://viacep.com.br/ws/${cepValue}/json?callback=myfn`, null, async (error, data) => {
+      if (error) {
         return this.setError();
+      } else {
+        if (data.erro) {
+          return this.setError();
+        }
+        const mapsResp = await CepServices.GetInfosFromAddress(data.logradouro);
+        return this.setState({
+          mapsResp: mapsResp.data,
+          cepResponse: data,
+          error: false,
+          loading: false 
+        });
       }
-
-      return this.setState({
-        mapsResp: response.data,
-        cepResponse: cepResponse.data,
-        error: false,
-        loading: false 
-      });
-    } catch (error) {
-      return this.setError();
-    }
+    });
   }
 
-  handleInputChange = (e) => this.setState({ cepValue: e.target.value });
+  handleInputChange = (e) => {
+    const { value } = e.target;
+    const numberValue = value.replace(/[^\d]/,'');
+
+    if (!isNaN(numberValue)) {
+      return this.setState({ cepValue: numberValue });
+    }
+
+    return null;
+  }
 
   handleKeyPress = (target) => {
     if (target.key === 'Enter') {
@@ -66,30 +80,17 @@ class SearchCep extends PureComponent {
     
     if (mapsResp && mapsResp.status === 'OK' && !isClosed) {
       return (
-        <div className="panel">
-          <button className="close-button" onClick={this.closePanel}>X</button>
-          <div className="address-infos">
-            <h2>{cepResponse.logradouro}</h2>
-            <p>{cepResponse.bairro}</p>
-            <p>{cepResponse.localidade} - {cepResponse.uf}</p>
-            <p>{cepResponse.cep}</p>
-          </div>
-          <GoogleMaps
-            googleMapURL={`https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&callback=initMap"`}
-            loadingElement={<div style={{ height: '400px' }} />}
-            containerElement={<div style={{ height: '400px' }} />}
-            mapElement={<div style={{ height: '400px' }} />}
-            latitude={mapsResp.results[0].geometry.location.lat}
-            longitude={mapsResp.results[0].geometry.location.lng}
-            markerName="Av Nova"
-          />
-        </div>
+        <MapContent
+          mapsResp={mapsResp}
+          cepResponse={cepResponse}
+          closeMapContent={this.closePanel}
+        />
       );
     } else if (error){
       return (
-        <div className="panel">
+        <Panel>
           <h2>Ops, CEP Inexistente. =/</h2>
-        </div>
+        </Panel>
       );
     }
 
@@ -102,20 +103,20 @@ class SearchCep extends PureComponent {
     return (
       <Fragment>
         <Title>Consulta de Endereço</Title>
-        <div className="panel">
-          <div>
-            <input
+        <Panel>
+          <div className="search-wrapper">
+            <Input
               className="input-search"
               placeholder="Digite um CEP"
               type="text"
               value={cepValue}
               onChange={this.handleInputChange}
               onKeyPress={this.handleKeyPress}
-              autoFocus
+              isAutoFocus
             />
-            <button className="primary-button" onClick={this.getCep}>Buscar</button>
+            <Button onClick={this.getCep}>Buscar</Button>
           </div>
-        </div>
+        </Panel>
         {loading ? <Loading /> : this.renderMap()}
       </Fragment>
     );

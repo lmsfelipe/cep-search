@@ -5,16 +5,6 @@ export const GEOCODE_KEY = process.env.REACT_APP_GEOCODE_KEY;
 
 class CepServices {
   /**
-   * Get Address from Cep
-   * @async
-   * @static
-   * @param {data} text
-   */
-  static GetAddressFromCep(data) {
-    return axios.get(`https://viacep.com.br/ws/${data}/json`);
-  }
-
-  /**
    * Get Infos from Address
    * @async
    * @static
