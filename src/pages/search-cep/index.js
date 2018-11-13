@@ -1,52 +1,77 @@
 import React, { PureComponent, Fragment } from 'react';
 
 import GoogleMaps from '../../components/google-maps';
+import Loading from '../../components/loading';
+import Title from '../../components/title';
 import CepServices, { MAPS_KEY } from '../../services';
 import './search-cep.css';
 
 class SearchCep extends PureComponent {
   state = {
     mapsResp: null,
+    cepResponse: null,
     loading: false,
     cepValue: '',
-    error: false
+    error: false,
+    isClosed: false
   };
+
+  setError = () => {
+    this.setState({
+      error: true,
+      loading: false
+    });
+  }
 
   getCep = async () => {
     const { cepValue } = this.state;
-    this.setState({ loading: true });
+    this.setState({
+      loading: true,
+      cepResponse: null,
+      mapsResp: null,
+      isClosed: false
+    });
 
     try {
       const cepResponse = await CepServices.GetAddressFromCep(cepValue);
       const response = await CepServices.GetInfosFromAddress(cepResponse.data.logradouro);
 
-      this.setState({
+      if (cepResponse.data.erro) {
+        return this.setError();
+      }
+
+      return this.setState({
         mapsResp: response.data,
         cepResponse: cepResponse.data,
+        error: false,
         loading: false 
       });
     } catch (error) {
-      console.log('ERROO', error.response);
-      this.setState({
-        error: true,
-        errorMessage: error.response.data,
-        loading: false 
-      });
+      return this.setError();
     }
   }
 
-  handleInputChange = (e) => this.setState({ cepValue: e.target.value })
+  handleInputChange = (e) => this.setState({ cepValue: e.target.value });
+
+  handleKeyPress = (target) => {
+    if (target.key === 'Enter') {
+      this.getCep();
+    }
+  }
+
+  closePanel = () => this.setState({ isClosed: true, error: false });
 
   renderMap = () => {
-    const { mapsResp, cepResponse } = this.state;
-    console.log(MAPS_KEY);
+    const { mapsResp, cepResponse, error, isClosed } = this.state;
     
-    if (mapsResp && mapsResp.status === 'OK') {
+    if (mapsResp && mapsResp.status === 'OK' && !isClosed) {
       return (
-        <Fragment>
-          <div>
+        <div className="panel">
+          <button className="close-button" onClick={this.closePanel}>X</button>
+          <div className="address-infos">
+            <h2>{cepResponse.logradouro}</h2>
             <p>{cepResponse.bairro}</p>
-            <p>{cepResponse.logradouro}</p>
+            <p>{cepResponse.localidade} - {cepResponse.uf}</p>
             <p>{cepResponse.cep}</p>
           </div>
           <GoogleMaps
@@ -58,11 +83,17 @@ class SearchCep extends PureComponent {
             longitude={mapsResp.results[0].geometry.location.lng}
             markerName="Av Nova"
           />
-        </Fragment>
+        </div>
       );
-    } else {
-      return <h2>Opss, houve um problema ao carregar o mapa. =/</h2>
+    } else if (error){
+      return (
+        <div className="panel">
+          <h2>Ops, CEP Inexistente. =/</h2>
+        </div>
+      );
     }
+
+    return null;
   }
 
   render() {
@@ -70,16 +101,22 @@ class SearchCep extends PureComponent {
 
     return (
       <Fragment>
-        {/* <h1>Consulta de CEP</h1> */}
-        <div className="search-cep-container">
+        <Title>Consulta de Endereço</Title>
+        <div className="panel">
           <div>
-            <input type="text" value={cepValue} onChange={this.handleInputChange} />
-            <button onClick={this.getCep}>Buscar</button>
-          </div>
-          <div style={{ width: '400px', heigth: '400px' }}>
-            {loading ? <h1>Loading Map</h1> : this.renderMap()}
+            <input
+              className="input-search"
+              placeholder="Digite um CEP"
+              type="text"
+              value={cepValue}
+              onChange={this.handleInputChange}
+              onKeyPress={this.handleKeyPress}
+              autoFocus
+            />
+            <button className="primary-button" onClick={this.getCep}>Buscar</button>
           </div>
         </div>
+        {loading ? <Loading /> : this.renderMap()}
       </Fragment>
     );
   }
