@@ -31,8 +31,8 @@ const MapContent = ({ mapsResp, cepResponse, closeMapContent }) => {
 }
 
 MapContent.propTypes = {
-  mapsResp: PropTypes.obj,
-  cepResponse: PropTypes.obj,
+  mapsResp: PropTypes.object,
+  cepResponse: PropTypes.object,
   closeMapContent: PropTypes.func.isRequired,
 };
 
